@@ -1,0 +1,53 @@
+const fs = require('fs');
+const { exec } = require('child_process');
+const { getRandom } = require('../../lib/myfunc');
+
+const handler = async (m, { hanz, setReply }) => {
+  const args = m.budy.split(' ').slice(1); // Mengambil argumen setelah command
+  const isQuotedAudio = m.quoted && m.quoted.mtype === 'audioMessage'; // Mengecek apakah pesan yang di-reply adalah audio
+
+  if (!isQuotedAudio) {
+    return setReply('Reply audio-nya!');
+  }
+
+  if (Number(args[0]) >= 11) {
+    return setReply('Maksimal volume adalah 10');
+  }
+
+  try {
+    await setReply('Proses mengubah volume...'); // Memberikan respon saat proses
+    let media3 = await hanz.downloadAndSaveMediaMessage(m.quoted, getRandom(''));
+    let rname = getRandom('.mp3');
+
+    // Mengubah volume menggunakan ffmpeg
+    exec(`ffmpeg -i ${media3} -filter:a "volume=${args[0]}" ${rname}`, async (err) => {
+      if (err) {
+        fs.unlinkSync(media3); // Hapus file media jika ada error
+        return setReply('Terjadi kesalahan saat memproses audio!');
+      }
+
+      // Mengirim audio yang sudah diubah volume-nya
+      let jadie = fs.readFileSync(rname);
+      await hanz.sendMessage(
+        m.chat,
+        { audio: jadie, mimetype: 'audio/mp4', ptt: true },
+        { quoted: m }
+      );
+
+      // Menghapus file sementara
+      fs.unlinkSync(rname);
+      fs.unlinkSync(media3);
+    });
+  } catch (e) {
+    console.error(e);
+    setReply('Terjadi kesalahan saat mengunduh atau memproses audio!');
+  }
+};
+
+handler.help = ['volumeaudio'];
+handler.command = ['volumeaudio','volaud'];
+handler.tags = ['convert'];
+handler.premium = false;
+handler.group = true;
+
+module.exports = handler;

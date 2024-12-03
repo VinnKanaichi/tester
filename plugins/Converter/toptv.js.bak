@@ -1,0 +1,25 @@
+const handler = async (m, { hanz, setReply }) => {
+  try {
+    // Mengecek apakah pesan yang diterima adalah video yang di-reply
+    if (m.message.extendedTextMessage && m.message.extendedTextMessage.contextInfo.quotedMessage.videoMessage) {
+      // Mendapatkan video yang di-reply
+      const dataVideo = { ptvMessage: m.message.extendedTextMessage.contextInfo.quotedMessage.videoMessage };
+      
+      // Mengirim ulang video
+      await hanz.relayMessage(m.chat, dataVideo, {});
+    } else {
+      setReply('Reply video atau kirim video terlebih dahulu');
+    }
+  } catch (error) {
+    console.error(error);
+    setReply('Terjadi kesalahan saat memproses video!');
+  }
+};
+
+handler.help = ['toptv'];
+handler.command = ['toptv'];
+handler.tags = ['media'];
+handler.premium = false;
+handler.group = true;
+
+module.exports = handler;

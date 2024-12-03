@@ -1,0 +1,50 @@
+const handler = async (m, { hanz, setReply }) => {
+  try {
+    // Mengecek apakah ada media yang di-reply
+    if (!m.quoted) return setReply('Reply Image/Video');
+
+    const mime = m.quoted.mimetype; // MIME type dari media yang di-reply
+
+    if (/image/.test(mime)) {
+      // Proses jika yang di-reply adalah gambar
+      let image = await hanz.downloadAndSaveMediaMessage(m.quoted);
+      await hanz.sendMessage(m.chat, {
+        image: { url: image },
+        caption: mess.success, // Pastikan `mess.success` sudah didefinisikan
+        fileLength: "999", // Menyatakan ukuran file
+        viewOnce: true // Mode view once
+      }, { quoted: m });
+    } else if (/video/.test(mime)) {
+      // Proses jika yang di-reply adalah video
+      let video = await hanz.downloadAndSaveMediaMessage(m.quoted);
+      await hanz.sendMessage(m.chat, {
+        video: { url: video },
+        caption: mess.success, // Pastikan `mess.success` sudah didefinisikan
+        fileLength: "99999999", // Menyatakan ukuran file
+        viewOnce: true // Mode view once
+      }, { quoted: m });
+    } else if (/audio/.test(mime)) {
+      // Proses jika yang di-reply adalah audio
+      let audio = await hanz.downloadAndSaveMediaMessage(m.quoted);
+      await hanz.sendMessage(m.chat, {
+        audio: { url: audio },
+        mimetype: 'audio/mpeg',
+        ptt: true, // Jika audio adalah pesan suara
+        viewOnce: true // Mode view once
+      });
+    } else {
+      setReply('Media yang di-reply bukan gambar, video, atau audio.');
+    }
+  } catch (e) {
+    console.error(e);
+    setReply('Terjadi kesalahan saat mengirim media!');
+  }
+};
+
+handler.help = ['toviewonce'];
+handler.command = ['toviewonce'];
+handler.tags = ['media'];
+handler.premium = false;
+handler.group = true;
+
+module.exports = handler;

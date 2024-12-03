@@ -1,0 +1,49 @@
+const translate = require('translate-google-api');
+
+
+const handler = async (m, { hanz, prefix, command, args,setReply }) => {
+  let defaultLang = 'en'; // Default bahasa target
+  let tld = 'cn'; // TLD untuk penerjemahan (opsional, bisa disesuaikan)
+
+  // Menyiapkan contoh penggunaan dan daftar bahasa yang didukung
+  const toks = `
+Contoh:
+${prefix + command} <lang> [text]
+${prefix + command} id your messages
+Daftar bahasa yang didukung: https://cloud.google.com/translate/docs/languages
+  `.trim();
+
+  // Menyusun bahasa dan teks dari input pengguna
+  let lang = args[0];
+  let text = args.slice(1).join(' ');
+
+  // Menentukan jika tidak ada kode bahasa yang valid, maka gunakan bahasa default
+  if ((args[0] || '').length !== 2) {
+    lang = defaultLang;
+    text = args.join(' ');
+  }
+
+  // Menggunakan teks dari pesan yang dikutip jika tidak ada input teks langsung
+  if (!text && m.quoted && m.quoted.text) text = m.quoted.text;
+
+  // Menangani terjemahan
+  let result;
+  try {
+    result = await translate(`${text}`, { to: lang });
+  } catch (e) {
+    // Jika terjemahan gagal, gunakan bahasa default dan beri pesan contoh penggunaan
+    result = await translate(`${text}`, { to: defaultLang });
+    setReply(toks);  // Mengirimkan contoh penggunaan jika terjadi error
+  } finally {
+    // Mengirim hasil terjemahan
+    setReply(result[0]);
+  }
+};
+
+handler.help = ['translate', 'trans'];
+handler.command = ['translate', 'tr'];
+handler.tags = ['convert'];
+handler.premium = false;
+handler.group = true;
+
+module.exports = handler;

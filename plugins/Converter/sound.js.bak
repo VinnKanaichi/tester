@@ -1,0 +1,39 @@
+const { getBuffer } = require('../../lib/myfunc'); // Pastikan fungsi getBuffer tersedia
+
+const handler = async (m, { hanz, setReply, prefix, command, args,sendReact }) => {
+  try {
+    // Parse input untuk nomor suara
+    const soundNumber = parseInt(args[0], 10);
+
+    // Validasi input nomor suara
+    if (isNaN(soundNumber) || soundNumber < 1 || soundNumber > 161) {
+      return m.reply('Masukkan nomor suara antara 1 dan 161\nContoh: .sound 2');
+    }
+
+    
+     sendReact('🕚');
+    const soundURL = `https://github.com/DGXeon/Tiktokmusic-API/raw/master/tiktokmusic/sound${soundNumber}.mp3`;
+
+ 
+    const soundBuffer = await getBuffer(soundURL);
+
+   
+    await hanz.sendMessage(m.chat, {
+      audio: soundBuffer, 
+      mimetype: 'audio/mp4', 
+      ptt: true
+    }, { quoted: m });
+  } catch (error) {
+    console.error(error);
+    m.reply("Terjadi kesalahan saat mengunduh atau mengirim suara.");
+  }
+};
+
+// Menambahkan metadata pada handler
+handler.help = ['sound'];
+handler.command = ['sound'];
+handler.tags = ['fun'];
+handler.premium = false;
+handler.group = true;
+
+module.exports = handler;
